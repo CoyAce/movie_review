@@ -44,10 +44,20 @@ class MovieReview():
                 number -= 1
                 self.show_search_result(film_name, film_url, number)
             if select_key.isdigit():
-                print '你选择的影片的subject_id是' + self.parse_subject_id(film_url, int(select_key))
+                self.sub_menu(film_name, film_url, select_key)
 
             select_key = raw_input("请输入指令：")
             os.system('clear')
+
+    def sub_menu(self, film_name, film_url, select_key):
+        subject_id = self.parse_subject_id(film_url, int(select_key))
+        print '你选择的影片的subject_id是' + subject_id
+        self.crawl_comments_wrapper(film_name, subject_id)
+        crawl_result=self.load_result()
+        comments=crawl_result['comments']
+        next_page=crawl_result['next_page']
+        for i in len(comments):
+            print comments[i]
 
     def load_data(self, search_result):
         film_name = search_result['film_name']
@@ -87,6 +97,7 @@ class MovieReview():
         p = Process(target=self.crawl_comments, args=(film_name, subject_id, suffix))
         p.start()
         p.join()
+        # self.crawl_comments(film_name,subject_id,suffix)
 
     @staticmethod
     def crawl_comments(film_name, subject_id, suffix):
@@ -97,9 +108,10 @@ class MovieReview():
         reactor.run()  # the script will block here until the crawling is finished
 
     def crawl_wrapper(self, search_text, suffix=''):
-        p = Process(target=self.crawl, args=(search_text, suffix,))
-        p.start()
-        p.join()
+        # p = Process(target=self.crawl, args=(search_text, suffix,))
+        # p.start()
+        # p.join()
+        self.crawl(search_text,suffix)
 
     @staticmethod
     def crawl(search_text, suffix):
