@@ -1,6 +1,7 @@
 # _*_ coding:utf-8 _*_
 import logging
 
+import sys
 from scrapy import cmdline
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
@@ -11,6 +12,8 @@ from tutorial.spiders.search_spider import SearchSpider
 class MovieReview():
 
     def __init__(self):
+        reload(sys)
+        sys.setdefaultencoding('utf8')
         logging.getLogger('scrapy').setLevel(logging.ERROR)
         logging.getLogger('scrapy').propagate = False
         pass

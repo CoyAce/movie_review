@@ -14,3 +14,8 @@ class FilmItem(scrapy.Item):
     film_url = scrapy.Field()
     previous_page = scrapy.Field()
     next_page = scrapy.Field()
+
+
+class FilmComment(scrapy.Item):
+    comments = scrapy.Field()
+    next_page = scrapy.Field()
