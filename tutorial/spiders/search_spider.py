@@ -34,7 +34,7 @@ class SearchSpider(scrapy.Spider):
             item_loader.add_xpath('film_name', '//div[@class="title"]/a/text()')
             item_loader.add_xpath('film_url', '//div[@class="title"]/a/@href')
             item = item_loader.load_item()
-            item['previous_page'] = response.xpath('//a[@class="prev activate"]/@href').extract_first()
+            item['previous_page'] = response.xpath('//a[@class="prev"]/@href').extract_first()
             item['next_page'] = response.xpath('//a[@class="next"]/@href').extract_first()
         except Exception as e:
             print e

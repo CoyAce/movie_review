@@ -3,6 +3,7 @@ import json
 import logging
 
 import sys
+import threading
 
 from multiprocessing import Process
 
@@ -30,7 +31,7 @@ class MovieReview():
         search_result = self.load_result()
         film_name, film_url, next_page, previous_page = self.load_data(search_result)
         self.show_search_result(film_name, film_url)
-        number=1
+        number = 1
         print "page: %d p:上一页 n:下一页 q：退出" % number
         select_key = raw_input("请选择要分析的电影：")
         while select_key != 'q':
@@ -39,15 +40,15 @@ class MovieReview():
                 search_result = self.load_result()
                 film_name, film_url, next_page, previous_page = self.load_data(search_result)
                 self.show_search_result(film_name, film_url)
-                number+=1
+                number += 1
             if select_key == 'p':
                 self.crawl_data(search_text, previous_page)
                 search_result = self.load_result()
                 film_name, film_url, next_page, previous_page = self.load_data(search_result)
                 self.show_search_result(film_name, film_url)
-                number-=1
+                number -= 1
             if select_key.isdigit():
-                print self.parse_subject_id(film_url,int(select_key))
+                print self.parse_subject_id(film_url, int(select_key))
             print "page: %d p:上一页 n:下一页 q：退出" % number
             select_key = raw_input("请选择要分析的电影：")
             os.system('clear')
@@ -84,7 +85,7 @@ class MovieReview():
         return search_text
 
     def crawl_data(self, search_text, suffix=''):
-        p = Process(target=self.crawl, args=(search_text,suffix,))
+        p = Process(target=self.crawl, args=(search_text, suffix,))
         p.start()
         p.join()
 
