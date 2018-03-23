@@ -30,27 +30,25 @@ class MovieReview():
         # Reading data back
         search_result = self.load_result()
         film_name, film_url, next_page, previous_page = self.load_data(search_result)
-        self.show_search_result(film_name, film_url)
         number = 1
-        print "page: %d p:上一页 n:下一页 q：退出" % number
+        self.show_search_result(film_name, film_url, number)
         select_key = raw_input("请选择要分析的电影：")
         while select_key != 'q':
             if select_key == 'n':
                 self.crawl_data(search_text, next_page)
                 search_result = self.load_result()
                 film_name, film_url, next_page, previous_page = self.load_data(search_result)
-                self.show_search_result(film_name, film_url)
                 number += 1
+                self.show_search_result(film_name, film_url, number)
             if select_key == 'p':
                 self.crawl_data(search_text, previous_page)
                 search_result = self.load_result()
                 film_name, film_url, next_page, previous_page = self.load_data(search_result)
-                self.show_search_result(film_name, film_url)
                 number -= 1
+                self.show_search_result(film_name, film_url, number)
             if select_key.isdigit():
                 print self.parse_subject_id(film_url, int(select_key))
-            print "page: %d p:上一页 n:下一页 q：退出" % number
-            select_key = raw_input("请选择要分析的电影：")
+            select_key = raw_input("请输入指令：")
             os.system('clear')
 
     def load_data(self, search_result):
@@ -60,7 +58,7 @@ class MovieReview():
         next_page = search_result['next_page']
         return film_name, film_url, next_page, previous_page
 
-    def show_search_result(self, film_name, film_url):
+    def show_search_result(self, film_name, film_url, number):
         try:
             sequence = 1
             for i in xrange(len(film_url)):
@@ -70,6 +68,7 @@ class MovieReview():
                     sequence += 1
         except Exception as e:
             print e
+        print "page: %d p:上一页 n:下一页 q：退出" % number
 
     def parse_subject_id(self, film_url, i):
         return film_url[i].split('subject')[1].replace('/', '')
