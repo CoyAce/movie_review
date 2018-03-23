@@ -5,6 +5,8 @@ import logging
 import sys
 
 from multiprocessing import Process
+
+import os
 from scrapy import cmdline
 from scrapy.crawler import CrawlerProcess, CrawlerRunner
 from scrapy.utils.project import get_project_settings
@@ -26,33 +28,36 @@ class MovieReview():
         search_text = self.search_film_by_keyword()
         # Reading data back
         search_result = self.load_result()
-        film_name = search_result['film_name']
-        film_url = search_result['film_url']
-        previous_page = search_result['previous_page']
-        next_page = search_result['next_page']
+        film_name, film_url, next_page, previous_page = self.load_data(search_result)
         self.show_search_result(film_name, film_url)
-        print 'p:上一页 n:下一页 q：退出'
+        number=1
+        print "page: %d p:上一页 n:下一页 q：退出" % number
         select_key = raw_input("请选择要分析的电影：")
         while select_key != 'q':
             if select_key == 'n':
                 self.crawl_data(search_text, next_page)
                 search_result = self.load_result()
-                film_name = search_result['film_name']
-                film_url = search_result['film_url']
-                previous_page = search_result['previous_page']
-                next_page = search_result['next_page']
+                film_name, film_url, next_page, previous_page = self.load_data(search_result)
                 self.show_search_result(film_name, film_url)
+                number+=1
             if select_key == 'p':
                 self.crawl_data(search_text, previous_page)
                 search_result = self.load_result()
-                film_name = search_result['film_name']
-                film_url = search_result['film_url']
-                previous_page = search_result['previous_page']
-                next_page = search_result['next_page']
+                film_name, film_url, next_page, previous_page = self.load_data(search_result)
                 self.show_search_result(film_name, film_url)
+                number-=1
             if select_key.isdigit():
                 print self.parse_subject_id(film_url,int(select_key))
+            print "page: %d p:上一页 n:下一页 q：退出" % number
+            select_key = raw_input("请选择要分析的电影：")
+            os.system('clear')
 
+    def load_data(self, search_result):
+        film_name = search_result['film_name']
+        film_url = search_result['film_url']
+        previous_page = search_result['previous_page']
+        next_page = search_result['next_page']
+        return film_name, film_url, next_page, previous_page
 
     def show_search_result(self, film_name, film_url):
         try:
@@ -81,6 +86,7 @@ class MovieReview():
     def crawl_data(self, search_text, suffix=''):
         p = Process(target=self.crawl, args=(search_text,suffix,))
         p.start()
+        p.join()
 
     def crawl(self, search_text, suffix):
         # 爬取结果
