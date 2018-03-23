@@ -18,8 +18,8 @@ class MovieReview():
     def __init__(self):
         reload(sys)
         sys.setdefaultencoding('utf8')
-        logging.getLogger('scrapy').setLevel(logging.ERROR)
-        logging.getLogger('scrapy').propagate = False
+        # logging.getLogger('scrapy').setLevel(logging.ERROR)
+        # logging.getLogger('scrapy').propagate = False
         pass
 
     def main(self):
@@ -44,20 +44,20 @@ class MovieReview():
                 number -= 1
                 self.show_search_result(film_name, film_url, number)
             if select_key.isdigit():
-                self.sub_menu(film_name, film_url, select_key)
-
+                self.sub_menu(film_name, film_url, int(select_key)-1)
             select_key = raw_input("请输入指令：")
             os.system('clear')
 
     def sub_menu(self, film_name, film_url, select_key):
-        subject_id = self.parse_subject_id(film_url, int(select_key))
+        subject_id = self.parse_subject_id(film_url, select_key)
         print '你选择的影片的subject_id是' + subject_id
-        self.crawl_comments_wrapper(film_name, subject_id)
+        self.crawl_comments_wrapper(film_name[select_key], subject_id)
         crawl_result=self.load_result()
         comments=crawl_result['comments']
         next_page=crawl_result['next_page']
-        for i in len(comments):
+        for i in xrange(len(comments)):
             print comments[i]
+        select_key=raw_input("请输入指令")
 
     def load_data(self, search_result):
         film_name = search_result['film_name']
@@ -101,6 +101,9 @@ class MovieReview():
 
     @staticmethod
     def crawl_comments(film_name, subject_id, suffix):
+        print film_name
+        print subject_id
+        print suffix
         # 爬取结果
         runner = CrawlerRunner(get_project_settings())
         d = runner.crawl(CommentSpider, film_name, subject_id, suffix)
@@ -108,10 +111,10 @@ class MovieReview():
         reactor.run()  # the script will block here until the crawling is finished
 
     def crawl_wrapper(self, search_text, suffix=''):
-        # p = Process(target=self.crawl, args=(search_text, suffix,))
-        # p.start()
-        # p.join()
-        self.crawl(search_text,suffix)
+        p = Process(target=self.crawl, args=(search_text, suffix,))
+        p.start()
+        p.join()
+        # self.crawl(search_text,suffix)
 
     @staticmethod
     def crawl(search_text, suffix):
@@ -123,4 +126,5 @@ class MovieReview():
 
 
 if __name__ == '__main__':
+    # MovieReview.crawl_comments('肖申克的救赎','1292052','')
     MovieReview().main()
