@@ -25,10 +25,10 @@ class SearchSpider(scrapy.Spider):
             yield SplashRequest(url=url.encode('utf-8'), headers=headers, callback=self.parse)
 
     def parse(self, response):
-        filename = '%s.html' % self.search_text
-        with open(filename, 'wb') as f:
-            f.write(response.body)
-        self.log('Saved file %s' % filename)
+        # filename = '%s.html' % self.search_text
+        # with open(filename, 'wb') as f:
+        #     f.write(response.body)
+        # self.log('Saved file %s' % filename)
         try:
             item_loader = ItemLoader(item=FilmItem(), response=response)
             item_loader.add_xpath('film_name', '//div[@class="title"]/a/text()')

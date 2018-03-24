@@ -18,17 +18,12 @@ class MovieReview():
     def __init__(self):
         reload(sys)
         sys.setdefaultencoding('utf8')
-        # logging.getLogger('scrapy').setLevel(logging.ERROR)
-        # logging.getLogger('scrapy').propagate = False
+        logging.getLogger('scrapy').setLevel(logging.INFO)
+        logging.getLogger('scrapy').propagate = True
         pass
 
     def main(self):
-        search_text = self.search_film_by_keyword()
-        # Reading data back
-        search_result = self.load_result()
-        film_name, film_url, next_page, previous_page = self.load_data(search_result)
-        number = 1
-        self.show_search_result(film_name, film_url, number)
+        film_name, film_url, next_page, number, previous_page, search_text, subject_ids = self.init_info()
         select_key = raw_input("请选择要分析的电影：")
         while select_key != 'q':
             if select_key == 'n':
@@ -36,30 +31,63 @@ class MovieReview():
                 search_result = self.load_result()
                 film_name, film_url, next_page, previous_page = self.load_data(search_result)
                 number += 1
-                self.show_search_result(film_name, film_url, number)
+                subject_ids, film_name = self.show_search_result(film_name, film_url, number)
             if select_key == 'p':
                 self.crawl_wrapper(search_text, previous_page)
                 search_result = self.load_result()
                 film_name, film_url, next_page, previous_page = self.load_data(search_result)
                 number -= 1
-                self.show_search_result(film_name, film_url, number)
+                subject_ids, film_name = self.show_search_result(film_name, film_url, number)
+            if select_key == 'r':
+                film_name, film_url, next_page, number, previous_page, search_text, subject_ids = self.init_info()
             if select_key.isdigit():
-                self.sub_menu(film_name, film_url, int(select_key)-1)
-            select_key = raw_input("请输入指令：")
+                return_code = self.sub_menu(film_name, subject_ids, int(select_key) - 1)
+                if return_code == 'q':
+                    exit(0)
+            select_key = raw_input("请输入指令：q->quit r->reset:")
             os.system('clear')
 
-    def sub_menu(self, film_name, film_url, select_key):
-        subject_id = self.parse_subject_id(film_url, select_key)
-        print '你选择的影片的subject_id是' + subject_id
-        self.crawl_comments_wrapper(film_name[select_key], subject_id)
-        crawl_result=self.load_result()
-        comments=crawl_result['comments']
-        next_page=crawl_result['next_page']
-        for i in xrange(len(comments)):
-            print comments[i]
-        select_key=raw_input("请输入指令")
+    def init_info(self):
+        search_text = self.search_film_by_keyword()
+        # Reading data back
+        search_result = self.load_result()
+        film_name, film_url, next_page, previous_page = self.load_data(search_result)
+        number = 1
+        subject_ids, film_name = self.show_search_result(film_name, film_url, number)
+        return film_name, film_url, next_page, number, previous_page, search_text, subject_ids
 
-    def load_data(self, search_result):
+    def sub_menu(self, film_name, subject_ids, select_key):
+        subject_id = subject_ids[select_key]
+        print '你选择的影片的subject_id是' + subject_id
+        subject_name = film_name[select_key]
+        self.crawl_comments_wrapper(subject_name, subject_id)
+        crawl_result = self.load_result()
+        comments = crawl_result['comments']
+        next_page = crawl_result['next_page']
+        self.show_comments(comments)
+        number = 1
+        print "page: %d n:下一页 q：退出 b:返回" % number
+        select_key = raw_input("请输入指令：")
+        while select_key != 'b' and select_key != 'q':
+            if select_key == 'n':
+                number += 1
+                self.crawl_comments_wrapper(subject_name, subject_id, next_page)
+                crawl_result = self.load_result()
+                comments = crawl_result['comments']
+                next_page = crawl_result['next_page']
+                self.show_comments(comments)
+            if select_key == 'q':
+                return 'q'
+            print "page: %d n:下一页 q：退出 b:返回" % number
+            select_key = raw_input("请输入指令：")
+
+    @staticmethod
+    def show_comments(comments):
+        for i in xrange(len(comments)):
+            print "%d) 评论：%s" % (i, comments[i])
+
+    @staticmethod
+    def load_data(search_result):
         film_name = search_result['film_name']
         film_url = search_result['film_url']
         previous_page = search_result['previous_page']
@@ -67,20 +95,26 @@ class MovieReview():
         return film_name, film_url, next_page, previous_page
 
     def show_search_result(self, film_name, film_url, number):
+        filtered_subject_ids = []
+        filtered_film_names = []
         try:
             sequence = 1
             for i in xrange(len(film_url)):
                 if "subject" in film_url[i]:
                     subject_id = self.parse_subject_id(film_url, i)
                     print "%d) name=%s subject_id=%s" % (sequence, film_name[i], subject_id)
+                    filtered_subject_ids.append(subject_id)
+                    filtered_film_names.append(film_name[i])
                     sequence += 1
         except Exception as e:
             print e
         print "page: %d p:上一页 n:下一页 q：退出" % number
+        return filtered_subject_ids, filtered_film_names
 
     @staticmethod
     def parse_subject_id(film_url, i):
-        return film_url[i].split('subject')[1].replace('/', '')
+        if 'subject' in film_url[i]:
+            return film_url[i].split('subject')[1].replace('/', '')
 
     @staticmethod
     def load_result():
@@ -102,8 +136,7 @@ class MovieReview():
     @staticmethod
     def crawl_comments(film_name, subject_id, suffix):
         print film_name
-        print subject_id
-        print suffix
+        # print suffix
         # 爬取结果
         runner = CrawlerRunner(get_project_settings())
         d = runner.crawl(CommentSpider, film_name, subject_id, suffix)
@@ -126,5 +159,5 @@ class MovieReview():
 
 
 if __name__ == '__main__':
-    # MovieReview.crawl_comments('肖申克的救赎','1292052','')
+    # MovieReview.crawl_comments('肖申克的救赎','1292052','?start=20&limit=20&sort=new_score&status=P&percent_type=')
     MovieReview().main()

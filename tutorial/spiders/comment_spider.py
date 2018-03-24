@@ -17,7 +17,7 @@ class CommentSpider(scrapy.Spider):
 
     def start_requests(self):
         urls = [
-            ur'https://movie.douban.com/subject/' + self.subject_id + '/comments?status=P' + self.suffix,
+            ur'https://movie.douban.com/subject/' + self.subject_id + '/comments' + self.suffix,
         ]
         user_agent = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.22 Safari/537.36 SE 2.X MetaSr 1.0'
         headers = {'User-Agent': user_agent}
@@ -25,10 +25,10 @@ class CommentSpider(scrapy.Spider):
             yield Request(url=url.encode('utf-8'), headers=headers, callback=self.parse)
 
     def parse(self, response):
-        filename = '%s.html' % self.film_name
-        with open(filename, 'wb') as f:
-            f.write(response.body)
-        self.log('Saved file %s' % filename)
+        # filename = '%s.html' % self.film_name
+        # with open(filename, 'wb') as f:
+        #     f.write(response.body)
+        # self.log('Saved file %s' % filename)
         try:
             item_loader = ItemLoader(item=FilmComment(), response=response)
             item_loader.add_xpath('comments', '//div[@class="comment"]/p/text()')
