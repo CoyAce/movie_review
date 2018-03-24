@@ -43,7 +43,7 @@ class MovieReview():
             if select_key.isdigit():
                 return_code = self.sub_menu(film_name, subject_ids, int(select_key) - 1)
                 if return_code == 'q':
-                    exit(0)
+                    return
             select_key = raw_input("请输入指令：q->quit r->reset:")
             os.system('clear')
 
@@ -76,10 +76,10 @@ class MovieReview():
                 comments = crawl_result['comments']
                 next_page = crawl_result['next_page']
                 self.show_comments(comments)
-            if select_key == 'q':
-                return 'q'
             print "page: %d n:下一页 q：退出 b:返回" % number
             select_key = raw_input("请输入指令：")
+        if select_key == 'q':
+            return 'q'
 
     @staticmethod
     def show_comments(comments):
