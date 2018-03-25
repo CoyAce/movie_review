@@ -1,23 +1,22 @@
 # _*_ coding:utf-8 _*_
-import scrapy
+from scrapy import Spider
 from scrapy.loader import ItemLoader
 from scrapy_splash import SplashRequest
-import sys
 
 from tutorial.items import FilmItem
 
 
-class SearchSpider(scrapy.Spider):
+class SearchSpider(Spider):
     name = "douban_search"
     allowed_domains = ["douban.com"]
 
-    def __init__(self, search_text,suffix):
+    def __init__(self, search_text, suffix):
         self.search_text = search_text
-        self.suffix=suffix
+        self.suffix = suffix
 
     def start_requests(self):
         urls = [
-            ur'https://movie.douban.com/subject_search?search_text=' + self.search_text + ur'&cat=1002'+self.suffix,
+            ur'https://movie.douban.com/subject_search?search_text=' + self.search_text + ur'&cat=1002' + self.suffix,
         ]
         user_agent = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.22 Safari/537.36 SE 2.X MetaSr 1.0'
         headers = {'User-Agent': user_agent}

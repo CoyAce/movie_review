@@ -1,12 +1,11 @@
 # _*_ coding:utf-8 _*_
-import scrapy
-from scrapy import Request
+from scrapy import Request, Spider
 from scrapy.loader import ItemLoader
 
 from tutorial.items import FilmComment
 
 
-class CommentSpider(scrapy.Spider):
+class CommentSpider(Spider):
     name = "douban_comment"
     allowed_domains = ["douban.com"]
 

@@ -19,3 +19,7 @@ sudo docker run -p 8050:8050 scrapinghub/splash
 
 情感分析
 
+# 问题
+
+scrapy和pickle、nltk冲突
+

@@ -1,16 +1,17 @@
 # coding=utf-8
-import pickle
-import itertools
-import nltk
+
+from itertools import chain
+from pickle import dump
+from nltk import bigrams
+from nltk.classify.scikitlearn import SklearnClassifier
 from nltk.collocations import BigramCollocationFinder
 from nltk.metrics import BigramAssocMeasures
 from nltk.probability import FreqDist, ConditionalFreqDist
-import sklearn
-from sklearn.svm import SVC, LinearSVC, NuSVC
-from sklearn.naive_bayes import GaussianNB, MultinomialNB, BernoulliNB
 from sklearn.linear_model import LogisticRegression
-from nltk.classify.scikitlearn import SklearnClassifier
 from sklearn.metrics import accuracy_score
+from sklearn.naive_bayes import MultinomialNB, BernoulliNB
+from sklearn.svm import SVC, LinearSVC, NuSVC
+
 
 # Feature extraction function
 def bag_of_words(words):
@@ -20,7 +21,7 @@ def bag_of_words(words):
     return dict([(word, True) for word in words])
 
 
-def bigrams(words, score_function=BigramAssocMeasures.chi_sq, top_n=200):
+def bigram(words, score_function=BigramAssocMeasures.chi_sq, top_n=200):
     """
     Use bigrams as features (use chi square chose top 200 bigrams)
     """
@@ -70,8 +71,8 @@ def calculate_word_bigram_scores(positive_data, negative_data):
 
 
 def chain_words(positive_data, negative_data):
-    positive_words = list(itertools.chain(*positive_data))
-    negative_words = list(itertools.chain(*negative_data))
+    positive_words = list(chain(*positive_data))
+    negative_words = list(chain(*negative_data))
     return positive_words, negative_words
 
 
@@ -119,7 +120,7 @@ def best_word_features(words, best_words):
 
 # Use chi_sq to find most informative bigrams of the review
 def best_bigram_features(words, best_words):
-    return dict([(word, True) for word in nltk.bigrams(words) if word in best_words])
+    return dict([(word, True) for word in bigrams(words) if word in best_words])
 
 
 # Use chi_sq to find most informative words and bigrams of the review
@@ -186,7 +187,7 @@ def find_best_classifier(classifiers):
 def store_classifier(object, train_set, path):
     object_classifier = SklearnClassifier(object)
     object_classifier.train(train_set)
-    pickle.dump(object_classifier, open(path + '/classifier.pkl', 'w'))
+    dump(object_classifier, open(path + '/classifier.pkl', 'w'))
 
 
 # 4. 加载分类器

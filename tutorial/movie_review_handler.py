@@ -1,8 +1,6 @@
 # _*_ coding:utf-8 _*_
 import json
-import logging
 import os
-import pickle
 import sys
 from multiprocessing import Process
 
@@ -11,7 +9,8 @@ from scrapy.utils.log import configure_logging
 from scrapy.utils.project import get_project_settings
 from twisted.internet import reactor
 
-from tutorial import text_processing, feature_extractor
+from tutorial import text_processing
+#
 from tutorial.spiders.comment_spider import CommentSpider
 from tutorial.spiders.search_spider import SearchSpider
 
@@ -24,10 +23,7 @@ class MovieReview():
         reload(sys)
         configure_logging()
         sys.setdefaultencoding('utf8')
-        self.classifier = pickle.load(open(os.getcwd() + '/classifier.pkl'))
-        with open('best_word.json', 'r') as f:
-            self.best_words = set(json.load(f))
-        pass
+        # self.svm_classifier = SVMClassifier()
 
     def main(self):
         film_name, film_url, next_page, number, previous_page, search_text, subject_ids = self.init_info()
@@ -90,14 +86,14 @@ class MovieReview():
 
     def show_comments(self, comments):
         target_review = text_processing.segments_all_sentences(comments)
-        sentiments = self.classifier.classify_many(
-            feature_extractor.extract_features(target_review, self.best_words))
+        # sentiments = self.svm_classifier.classify(target_review)
         for i in xrange(len(comments)):
-            if sentiments[i] == 'pos':
-                sentiment = '好评'
-            else:
-                sentiment = '差评'
-            print "%d)%s 评论：%s" % (i, sentiment, comments[i])
+            # if sentiments[i] == 'pos':
+            #     sentiment = '好评'
+            # else:
+            #     sentiment = '差评'
+            # print "%d)%s 评论：%s" % (i, sentiment, comments[i])
+            print "%d) 评论：%s" % (i, comments[i])
 
     @staticmethod
     def load_data(search_result):
@@ -144,7 +140,7 @@ class MovieReview():
         p = Process(target=self.crawl_comments, args=(film_name, subject_id, suffix))
         p.start()
         p.join()
-        # self.crawl_comments(film_name,subject_id,suffix)
+        # self.crawl_comments(film_name, subject_id, suffix)
 
     @staticmethod
     def crawl_comments(film_name, subject_id, suffix):
@@ -160,7 +156,7 @@ class MovieReview():
         p = Process(target=self.crawl, args=(search_text, suffix))
         p.start()
         p.join()
-        # self.crawl(search_text,suffix)
+        # self.crawl(search_text, suffix)
 
     @staticmethod
     def crawl(search_text, suffix):
@@ -171,10 +167,22 @@ class MovieReview():
         reactor.run()  # the script will block here until the crawling is finished
 
 
+class SVMClassifier:
+    def __init__(self):
+        import pickle
+        self.svmclf = pickle.load(open(os.getcwd() + '/classifier.pkl'))
+        with open('best_word.json', 'r') as f:
+            self.best_words = set(json.load(f))
+#
+#     def classify(self, target_review):
+#         from tutorial.feature_extractor import extract_features
+#         return self.svmclf.classify_many(extract_features(target_review, self.best_words))
+
+
 if __name__ == '__main__':
     try:
-        MovieReview().crawl_wrapper('肖')
+        # MovieReview().crawl_wrapper('肖')
         # MovieReview.crawl_comments('肖申克的救赎','1292052','?start=20&limit=20&sort=new_score&status=P&percent_type=')
-        # MovieReview().main()
+        MovieReview().main()
     except Exception as e:
         print e
