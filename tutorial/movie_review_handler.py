@@ -7,6 +7,7 @@ import sys
 from multiprocessing import Process
 
 from scrapy.crawler import CrawlerRunner
+from scrapy.utils.log import configure_logging
 from scrapy.utils.project import get_project_settings
 from twisted.internet import reactor
 
@@ -14,14 +15,15 @@ from tutorial import text_processing, feature_extractor
 from tutorial.spiders.comment_spider import CommentSpider
 from tutorial.spiders.search_spider import SearchSpider
 
+SETTINGS = get_project_settings()
+
 
 class MovieReview():
 
     def __init__(self):
         reload(sys)
+        configure_logging()
         sys.setdefaultencoding('utf8')
-        logging.getLogger('scrapy').setLevel(logging.INFO)
-        logging.getLogger('scrapy').propagate = True
         self.classifier = pickle.load(open(os.getcwd() + '/classifier.pkl'))
         with open('best_word.json', 'r') as f:
             self.best_words = set(json.load(f))
@@ -149,13 +151,13 @@ class MovieReview():
         print film_name
         # print suffix
         # 爬取结果
-        runner = CrawlerRunner(get_project_settings())
+        runner = CrawlerRunner(SETTINGS)
         d = runner.crawl(CommentSpider, film_name, subject_id, suffix)
         d.addBoth(lambda _: reactor.stop())
         reactor.run()  # the script will block here until the crawling is finished
 
     def crawl_wrapper(self, search_text, suffix=''):
-        p = Process(target=self.crawl, args=(search_text, suffix,))
+        p = Process(target=self.crawl, args=(search_text, suffix))
         p.start()
         p.join()
         # self.crawl(search_text,suffix)
@@ -163,7 +165,7 @@ class MovieReview():
     @staticmethod
     def crawl(search_text, suffix):
         # 爬取结果
-        runner = CrawlerRunner(get_project_settings())
+        runner = CrawlerRunner(SETTINGS)
         d = runner.crawl(SearchSpider, search_text, suffix)
         d.addBoth(lambda _: reactor.stop())
         reactor.run()  # the script will block here until the crawling is finished
@@ -171,7 +173,8 @@ class MovieReview():
 
 if __name__ == '__main__':
     try:
+        MovieReview().crawl_wrapper('肖')
         # MovieReview.crawl_comments('肖申克的救赎','1292052','?start=20&limit=20&sort=new_score&status=P&percent_type=')
-        MovieReview().main()
+        # MovieReview().main()
     except Exception as e:
         print e
