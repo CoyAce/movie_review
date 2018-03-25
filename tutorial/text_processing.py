@@ -77,21 +77,42 @@ def load_data_and_segment_sentences(file_path, nth_sheet=1, nth_column=1):
     :return: A multi-dimension list of reviews, filtered by stopword list.
     """
     # Read product review data from excel file and segment every review
+    segmented_review_data = segment_review(file_path, nth_column, nth_sheet)
+
+    return filter_stopword(segmented_review_data)
+
+
+def segments_all_sentences(comments):
+    segmented_review_data = segment_review_list(comments)
+
+    return filter_stopword(segmented_review_data)
+
+
+def segment_review(file_path, nth_column, nth_sheet):
     segmented_review_data = []
     sheet = extract_excel(file_path, nth_sheet)
     for cell in sheet.col_values(nth_column - 1)[0:sheet.nrows]:
         # Segment every review
         segmented_review_data.append(segment_to_word_list(cell))
+    return segmented_review_data
 
+
+def segment_review_list(comments):
+    segmented_review_data = []
+    for cell in comments:
+        # Segment every review
+        segmented_review_data.append(segment_to_word_list(cell))
+    return segmented_review_data
+
+
+def filter_stopword(segmented_review_data):
     # Read txt file contain sentiment stopwords
     sentiment_stopwords = extract_txt_of_multiple_line(path + '/dict/sentiment_stopword.txt')
-
     # Filter stopwords from reviews
     segmented_and_filtered_reviews = []
     for review in segmented_review_data:
         filtered_review = [word for word in review if word not in sentiment_stopwords and word != ' ']
         segmented_and_filtered_reviews.append(filtered_review)
         filtered_review = []
-
     # Return filtered segment reviews
     return segmented_and_filtered_reviews

@@ -2,6 +2,7 @@
 import json
 import logging
 import os
+import pickle
 import sys
 from multiprocessing import Process
 
@@ -9,6 +10,7 @@ from scrapy.crawler import CrawlerRunner
 from scrapy.utils.project import get_project_settings
 from twisted.internet import reactor
 
+from tutorial import text_processing, feature_extractor
 from tutorial.spiders.comment_spider import CommentSpider
 from tutorial.spiders.search_spider import SearchSpider
 
@@ -20,6 +22,9 @@ class MovieReview():
         sys.setdefaultencoding('utf8')
         logging.getLogger('scrapy').setLevel(logging.INFO)
         logging.getLogger('scrapy').propagate = True
+        self.classifier = pickle.load(open(os.getcwd() + '/classifier.pkl'))
+        with open('best_word.json', 'r') as f:
+            self.best_words = set(json.load(f))
         pass
 
     def main(self):
@@ -81,10 +86,16 @@ class MovieReview():
         if select_key == 'q':
             return 'q'
 
-    @staticmethod
-    def show_comments(comments):
+    def show_comments(self, comments):
+        target_review = text_processing.segments_all_sentences(comments)
+        sentiments = self.classifier.classify_many(
+            feature_extractor.extract_features(target_review, self.best_words))
         for i in xrange(len(comments)):
-            print "%d) 评论：%s" % (i, comments[i])
+            if sentiments[i] == 'pos':
+                sentiment = '好评'
+            else:
+                sentiment = '差评'
+            print "%d)%s 评论：%s" % (i, sentiment, comments[i])
 
     @staticmethod
     def load_data(search_result):
@@ -159,5 +170,8 @@ class MovieReview():
 
 
 if __name__ == '__main__':
-    # MovieReview.crawl_comments('肖申克的救赎','1292052','?start=20&limit=20&sort=new_score&status=P&percent_type=')
-    MovieReview().main()
+    try:
+        # MovieReview.crawl_comments('肖申克的救赎','1292052','?start=20&limit=20&sort=new_score&status=P&percent_type=')
+        MovieReview().main()
+    except Exception as e:
+        print e
