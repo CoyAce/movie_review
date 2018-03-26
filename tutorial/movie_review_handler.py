@@ -22,7 +22,7 @@ class MovieReview():
 
     def __init__(self):
         reload(sys)
-        configure_logging()
+        # configure_logging()
         sys.setdefaultencoding('utf8')
         self.svm_classifier = SVMClassifier()
 
@@ -68,8 +68,11 @@ class MovieReview():
         crawl_result = self.load_result()
         comments = crawl_result['comments']
         next_page = crawl_result['next_page']
-        self.show_comments(comments)
+        comments_number = 0
+        positive_review_number = 0
+        comments_number, positive_review_number = self.show_comments(comments, 0, 0)
         number = 1
+        # print "page: %d 好评率 %f n:下一页 q：退出 b:返回" % (number, positive_review_number / float(comments_number))
         print "page: %d n:下一页 q：退出 b:返回" % number
         select_key = raw_input("请输入指令：")
         while select_key != 'b' and select_key != 'q':
@@ -79,22 +82,27 @@ class MovieReview():
                 crawl_result = self.load_result()
                 comments = crawl_result['comments']
                 next_page = crawl_result['next_page']
-                self.show_comments(comments)
+                comments_number, positive_review_number = self.show_comments(comments, comments_number,
+                                                                             positive_review_number)
+            # print "page: %d 好评率 %f n:下一页 q：退出 b:返回" % (number, positive_review_number / float(comments_number))
             print "page: %d n:下一页 q：退出 b:返回" % number
             select_key = raw_input("请输入指令：")
         if select_key == 'q':
             return 'q'
 
-    def show_comments(self, comments):
+    def show_comments(self, comments, comments_number, positive_review_number):
         target_review = text_processing.segments_all_sentences(comments)
         sentiments = self.svm_classifier.classify(target_review)
+        comments_number += len(comments)
         for i in xrange(len(comments)):
             if sentiments[i] == 'pos':
                 sentiment = '好评'
+                positive_review_number += 1
             else:
                 sentiment = '差评'
             print "%d)%s 评论：%s" % (i, sentiment, comments[i])
             # print "%d) 评论：%s" % (i, comments[i])
+        return comments_number, positive_review_number
 
     @staticmethod
     def load_data(search_result):
