@@ -28,8 +28,7 @@ if __name__ == "__main__":
     word_scores = feature_extractor.calculate_word_bigram_scores(positive_reviews, negative_reviews)
 
     # 3. Transform review to features by setting labels to words in review
-    best_words = feature_extractor.find_best_words(word_scores,
-                                                   1500)  # Set dimension and initiallize most informative words
+    best_words = feature_extractor.find_best_words(word_scores, 1500)  # Set dimension and initiallize most informative words
 
     # posFeatures = feature_extractor.pos_features(feature_extractor.bigrams)
     # negFeatures = feature_extractor.neg_features(feature_extractor.bigrams)
@@ -66,6 +65,7 @@ if __name__ == "__main__":
     # object = feature_extractor.find_best_classifier(classifier)
     # object = classifier[4][0]
     object = LinearSVC()
+    print feature_extractor.clf_score(LinearSVC(), train_set, test, tag_test)
     print '选择的分类器是：'
     print object
     # 存储分类器
