@@ -31,6 +31,7 @@ class CommentSpider(Spider):
         try:
             item_loader = ItemLoader(item=FilmComment(), response=response)
             item_loader.add_xpath('comments', '//div[@class="comment"]/p/text()')
+            item_loader.add_xpath('scores','//span[contains(@class,"allstar")]/@title')
             item = item_loader.load_item()
             item['next_page'] = response.xpath('//a[@class="next"]/@href').extract_first()
         except Exception as e:

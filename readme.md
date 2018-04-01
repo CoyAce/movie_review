@@ -15,11 +15,3 @@ url为ur'https://movie.douban.com/subject/subject_id/comments?status=P'
 检测splash是否启动
 sudo docker run -p 8050:8050 scrapinghub/splash
 
-菜单开发
-
-情感分析
-
-# 问题
-
-scrapy和pickle、nltk冲突
-

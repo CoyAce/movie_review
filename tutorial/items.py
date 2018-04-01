@@ -18,4 +18,5 @@ class FilmItem(scrapy.Item):
 
 class FilmComment(scrapy.Item):
     comments = scrapy.Field()
+    scores = scrapy.Field()
     next_page = scrapy.Field()
