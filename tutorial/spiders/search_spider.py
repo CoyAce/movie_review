@@ -18,10 +18,8 @@ class SearchSpider(Spider):
         urls = [
             ur'https://movie.douban.com/subject_search?search_text=' + self.search_text + ur'&cat=1002' + self.suffix,
         ]
-        user_agent = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.22 Safari/537.36 SE 2.X MetaSr 1.0'
-        headers = {'User-Agent': user_agent}
         for url in urls:
-            yield SplashRequest(url=url.encode('utf-8'), headers=headers, callback=self.parse)
+            yield SplashRequest(url=url.encode('utf-8'), callback=self.parse)
 
     def parse(self, response):
         # filename = '%s.html' % self.search_text

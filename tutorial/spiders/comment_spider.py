@@ -18,10 +18,8 @@ class CommentSpider(Spider):
         urls = [
             ur'https://movie.douban.com/subject/' + self.subject_id + '/comments' + self.suffix,
         ]
-        user_agent = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.22 Safari/537.36 SE 2.X MetaSr 1.0'
-        headers = {'User-Agent': user_agent}
         for url in urls:
-            yield Request(url=url.encode('utf-8'), headers=headers, callback=self.parse)
+            yield Request(url=url.encode('utf-8'), callback=self.parse)
 
     def parse(self, response):
         # filename = '%s.html' % self.film_name
@@ -31,7 +29,7 @@ class CommentSpider(Spider):
         try:
             item_loader = ItemLoader(item=FilmComment(), response=response)
             item_loader.add_xpath('comments', '//div[@class="comment"]/p/text()')
-            item_loader.add_xpath('scores','//span[contains(@class,"allstar")]/@title')
+            item_loader.add_xpath('scores', '//span[contains(@class,"allstar")]/@title')
             item = item_loader.load_item()
             item['next_page'] = response.xpath('//a[@class="next"]/@href').extract_first()
         except Exception as e:
