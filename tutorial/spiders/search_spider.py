@@ -26,6 +26,7 @@ class SearchSpider(Spider):
         # with open(filename, 'wb') as f:
         #     f.write(response.body)
         # self.log('Saved file %s' % filename)
+        global item
         try:
             item_loader = ItemLoader(item=FilmItem(), response=response)
             item_loader.add_xpath('film_name', '//div[@class="title"]/a/text()')

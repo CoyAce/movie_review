@@ -69,11 +69,8 @@ class MovieReview():
         comments = crawl_result['comments']
         scores = crawl_result['scores']
         next_page = crawl_result['next_page']
-        comments_number = 0
-        positive_review_number = 0
         comments_number, positive_review_number = self.show_comments(comments, scores, 0, 0)
         number = 1
-        # print "page: %d 好评率 %f n:下一页 q：退出 b:返回" % (number, positive_review_number / float(comments_number))
         print "page: %d n:下一页 q：退出 b:返回" % number
         select_key = raw_input("请输入指令：")
         while select_key != 'b' and select_key != 'q':
@@ -86,7 +83,6 @@ class MovieReview():
                 next_page = crawl_result['next_page']
                 comments_number, positive_review_number = self.show_comments(comments, scores, comments_number,
                                                                              positive_review_number)
-            # print "page: %d 好评率 %f n:下一页 q：退出 b:返回" % (number, positive_review_number / float(comments_number))
             print "page: %d n:下一页 q：退出 b:返回" % number
             select_key = raw_input("请输入指令：")
         if select_key == 'q':
@@ -102,8 +98,12 @@ class MovieReview():
                 positive_review_number += 1
             else:
                 sentiment = '差评'
-            print "%d)评论：%s 情感分析结果：%s 用户打分：%s" % (i, comments[i], sentiment, scores[i])
-            # print "%d) 评论：%s" % (i, comments[i])
+            # 处理没有评分的情况
+            if i < len(scores):
+                score = scores[i]
+            else:
+                score = '力荐'
+            print "%d)评论：%s 情感分析结果：%s 用户打分：%s" % (i + 1, comments[i], sentiment, score)
         return comments_number, positive_review_number
 
     @staticmethod
@@ -151,7 +151,6 @@ class MovieReview():
         p = Process(target=self.crawl_comments, args=(film_name, subject_id, suffix))
         p.start()
         p.join()
-        # self.crawl_comments(film_name, subject_id, suffix)
 
     @staticmethod
     def crawl_comments(film_name, subject_id, suffix):
@@ -167,7 +166,6 @@ class MovieReview():
         p = Process(target=self.crawl, args=(search_text, suffix))
         p.start()
         p.join()
-        # self.crawl(search_text, suffix)
 
     @staticmethod
     def crawl(search_text, suffix):
