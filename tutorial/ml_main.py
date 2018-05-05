@@ -5,6 +5,9 @@ import pickle
 import time
 from random import shuffle
 
+from nltk import SklearnClassifier
+from sklearn.metrics import accuracy_score
+from sklearn.naive_bayes import MultinomialNB
 from sklearn.svm import LinearSVC
 
 import feature_extractor
@@ -55,9 +58,13 @@ if __name__ == "__main__":
     size_neg = int(len(negative_reviews) * 0.75)
 
     train_set = posFeatures[:size_pos] + negFeatures[:size_neg]
-    test_set = posFeatures[size_pos:] + negFeatures[size_neg:]
+    pos_set = posFeatures[size_pos:]
+    neg_set = negFeatures[size_neg:]
+    test_set = pos_set + neg_set
 
     test, tag_test = zip(*test_set)
+    pos, tag_pos = zip(*pos_set)
+    neg, tag_neg = zip(*neg_set)
 
     # classifier = []
     # classifier = feature_extractor.cal_classifier_accuracy(train_set, test, tag_test)
@@ -90,6 +97,25 @@ if __name__ == "__main__":
     for pre in predict:
         p_file.write(pre + '\n')
     p_file.close()
+
+
+    svmclassifier = SklearnClassifier(LinearSVC())
+    svmclassifier.train(train_set)
+    predict = svmclassifier.classify_many(test)
+    print "svm总体正确率" + str(accuracy_score(tag_test, predict))
+    predict = svmclassifier.classify_many(pos)
+    print "svm pos正确率" + str(accuracy_score(tag_pos, predict))
+    predict = svmclassifier.classify_many(neg)
+    print "svm neg正确率" + str(accuracy_score(tag_neg, predict))
+
+    nbclassifier = SklearnClassifier(MultinomialNB())
+    nbclassifier.train(train_set)
+    predict = nbclassifier.classify_many(test)
+    print "nb总体正确率" + str(accuracy_score(tag_test, predict))
+    predict = nbclassifier.classify_many(pos)
+    print "nb pos正确率" + str(accuracy_score(tag_pos, predict))
+    predict = nbclassifier.classify_many(neg)
+    print "nb neg正确率" + str(accuracy_score(tag_neg, predict))
     print '结束预测'
     end_time = time.time()
     print end_time - start_time
