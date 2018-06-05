@@ -36,3 +36,7 @@ class CommentSpider(Spider):
         except Exception as e:
             print e
         yield item
+        # next_page = response.xpath('//a[@class="next"]/@href').extract_first()
+        # if next_page is not None:
+        #     yield response.follow(ur'https://movie.douban.com/subject/' + self.subject_id + '/comments' + next_page,
+        #                           self.parse)
